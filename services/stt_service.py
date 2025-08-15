@@ -1,7 +1,7 @@
 import os
 import assemblyai as aai
 
-aai.settings.api_key = "1fbfca2263ea40dea8b966676162e7a3"
+aai.settings.api_key = os.getenv("ASSEMBLYAI_API_KEY")
 
 def transcribe_audio(audio_data: bytes) -> str:
     try:

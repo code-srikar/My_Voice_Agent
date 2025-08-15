@@ -1,7 +1,7 @@
 import os
 import requests
 
-MURF_API_KEY = "ap2_d4e50c58-e9ce-464f-9a84-4feafdf4cc46"
+MURF_API_KEY = os.getenv("MURF_API_KEY")
 
 def synthesize_speech(text: str, style: str = "Conversational") -> str:
     try:

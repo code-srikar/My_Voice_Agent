@@ -1,7 +1,7 @@
 import os
 import requests
 
-GEMINI_API_KEY = "AIzaSyBDf5TtPBJUbiMDzYM4UkGMU6lzxKs1O80"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 def query_llm(prompt: str) -> str:
     try:
