@@ -1,336 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Voice Agent</title>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>Voice Agent (Day 16 - Streaming)</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: #333;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
     }
-
     .container {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 24px;
-      padding: 40px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      width: 92%; max-width: 420px; background: rgba(255,255,255,0.95);
+      padding: 32px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15);
       text-align: center;
-      max-width: 400px;
-      width: 90%;
     }
-
     .title {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 30px;
+      font-size: 26px; font-weight: 800; margin-bottom: 16px;
       background: linear-gradient(45deg, #667eea, #764ba2);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-
+    .desc { color: #666; margin-bottom: 18px; }
     .record-button {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      border: none;
-      background: linear-gradient(45deg, #667eea, #764ba2);
-      color: white;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-      position: relative;
-      overflow: hidden;
-      margin: 20px 0;
+      width: 120px; height: 120px; border-radius: 50%; border: none; cursor: pointer;
+      background: linear-gradient(45deg, #667eea, #764ba2); color: white; font-weight: 700;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3); transition: transform .2s ease;
+      margin: 12px auto;
     }
-
-    .record-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-    }
-
-    .record-button:active {
-      transform: translateY(0);
-    }
-
-    .record-button.recording {
-      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-      animation: pulse 1.5s infinite;
-    }
-
-    .record-button.recording::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
-      transform: translate(-50%, -50%) scale(0);
-      animation: ripple 1.5s infinite;
-    }
-
-    .record-button.processing {
-      background: linear-gradient(45deg, #f39c12, #e67e22);
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-
-    @keyframes ripple {
-      0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-      100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
+    .record-button:hover { transform: translateY(-2px); }
+    .record-button.recording { background: linear-gradient(45deg, #ff6b6b, #ee5a24); animation: pulse 1.4s infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
     .status {
-      min-height: 60px;
-      padding: 15px;
-      margin-top: 20px;
-      background: rgba(102, 126, 234, 0.1);
-      border-radius: 12px;
-      font-size: 14px;
-      line-height: 1.5;
-      color: #555;
+      margin-top: 18px; padding: 14px; background: rgba(102,126,234,0.1);
+      border-radius: 12px; color: #333; white-space: pre-wrap; line-height: 1.45;
     }
-
-    .status.active {
-      background: rgba(102, 126, 234, 0.15);
-      border-left: 4px solid #667eea;
-    }
-
-    .conversation {
-      text-align: left;
-      white-space: pre-line;
-    }
-
-    .user-message {
-      color: #667eea;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .bot-message {
-      color: #333;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .audio-player {
-      display: none;
-    }
-
-    @media (max-width: 480px) {
-      .container {
-        padding: 30px 20px;
-        margin: 20px;
-      }
-
-      .record-button {
-        width: 100px;
-        height: 100px;
-        font-size: 14px;
-      }
-
-      .title {
-        font-size: 24px;
-      }
-    }
+    .status.active { border-left: 4px solid #667eea; background: rgba(102,126,234,0.18); }
+    .meta { margin-top: 10px; color: #777; font-size: 13px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 class="title">Voice Agent</h1>
-    
-    <button id="record-button" class="record-button">
-      <span id="button-text">Tap to Talk</span>
+    <h1 class="title">Voice Agent — Streaming</h1>
+    <p class="desc">Day 16: Stream mic audio to the server via WebSocket and save to file.</p>
+
+    <button id="record-btn" class="record-button">
+      <span id="btn-label">Start Streaming</span>
     </button>
-    
+
     <div id="status" class="status">
-      Ready to listen. Tap the button to start your first message.
+      Ready. Click to start streaming your microphone.
     </div>
-    
-    <audio id="audio-player" class="audio-player" autoplay></audio>
+    <div id="meta" class="meta"></div>
   </div>
 
   <script>
-    let mediaRecorder;
-    let recordedChunks = [];
-    let sessionId;
+    // --- Session ID in URL (kept from prior days)
+    function ensureSessionId() {
+      const url = new URL(window.location.href);
+      let sid = url.searchParams.get("session_id");
+      if (!sid) {
+        sid = Math.random().toString(36).slice(2, 10);
+        url.searchParams.set("session_id", sid);
+        history.replaceState({}, "", url.toString());
+      }
+      return sid;
+    }
+    const sessionId = ensureSessionId();
+
+    // UI elements
+    const recordBtn = document.getElementById('record-btn');
+    const btnLabel  = document.getElementById('btn-label');
+    const statusBox = document.getElementById('status');
+    const metaBox   = document.getElementById('meta');
+
+    // State
+    let mediaRecorder = null;
+    let ws = null;
     let isRecording = false;
-    let isProcessing = false;
+    let stream = null;
 
-    // Generate or fetch session id from query param
-    function getSessionId() {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has("session_id")) {
-        return urlParams.get("session_id");
-      }
-      const newId = Math.random().toString(36).substring(2, 10);
-      urlParams.set("session_id", newId);
-      window.history.replaceState({}, "", `${location.pathname}?${urlParams}`);
-      return newId;
+    function setStatus(msg, active = true) {
+      statusBox.textContent = msg;
+      statusBox.classList.toggle('active', active);
     }
-    sessionId = getSessionId();
-
-    const recordButton = document.getElementById('record-button');
-    const buttonText = document.getElementById('button-text');
-    const audioPlayer = document.getElementById('audio-player');
-    const statusDiv = document.getElementById('status');
-
-    function updateStatus(message, isActive = false) {
-      statusDiv.textContent = message;
-      statusDiv.classList.toggle('active', isActive);
+    function setButton(recording) {
+      isRecording = recording;
+      recordBtn.classList.toggle('recording', recording);
+      btnLabel.textContent = recording ? "Stop Streaming" : "Start Streaming";
     }
 
-    function updateButtonState(state) {
-      recordButton.className = 'record-button ' + state;
-      
-      switch(state) {
-        case 'recording':
-          buttonText.textContent = 'Listening...';
-          break;
-        case 'processing':
-          buttonText.textContent = 'Thinking...';
-          break;
-        default:
-          buttonText.textContent = 'Tap to Talk';
-      }
+    function getWsUrl() {
+      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+      return `${proto}://${location.host}/ws/audio?session_id=${encodeURIComponent(sessionId)}`;
     }
 
-    recordButton.addEventListener('click', async () => {
-      if (isProcessing) return;
-      
-      if (!isRecording) {
-        await startRecording();
-      } else {
-        stopRecording();
-      }
-    });
-
-    async function startRecording() {
+    async function startStreaming() {
       try {
-        recordedChunks = [];
-        updateStatus("Listening... Speak now!", true);
-        updateButtonState('recording');
+        // 1) Open WebSocket first
+        ws = new WebSocket(getWsUrl());
+        ws.binaryType = "arraybuffer";
 
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-
-        mediaRecorder.ondataavailable = event => {
-          if (event.data.size > 0) recordedChunks.push(event.data);
+        ws.onopen = () => {
+          metaBox.textContent = `WebSocket connected (${new Date().toLocaleTimeString()}) • session_id=${sessionId}`;
+        };
+        ws.onclose = () => {
+          metaBox.textContent = `WebSocket closed (${new Date().toLocaleTimeString()})`;
+        };
+        ws.onerror = (e) => {
+          console.error("WS error", e);
+          setStatus("WebSocket error. Please try again.", false);
         };
 
-        mediaRecorder.onstop = async () => {
-          isProcessing = true;
-          updateButtonState('processing');
-          updateStatus("Processing your message...", true);
+        // 2) Get mic
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // 3) Create MediaRecorder; use webm/opus (most supported)
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : 'audio/webm';
 
-          const audioBlob = new Blob(recordedChunks, { type: 'audio/webm' });
-          const formData = new FormData();
-          formData.append('file', audioBlob, 'recording.webm');
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
 
-          try {
-            const response = await fetch(`/agent/chat/${sessionId}`, {
-              method: 'POST',
-              body: formData
-            });
-            const data = await response.json();
+        mediaRecorder.onstart = () => {
+          setStatus("Streaming… Your audio is being saved on the server.", true);
+          setButton(true);
+        };
 
-            if (data.audio_url) {
-              audioPlayer.src = data.audio_url;
-              
-              const conversationText = `You: ${data.user_transcript || 'Audio message'}\n\nAgent: ${data.bot_text}`;
-              statusDiv.innerHTML = `<div class="conversation"><div class="user-message">You: ${data.user_transcript || 'Audio message'}</div><div class="bot-message">Agent: ${data.bot_text}</div></div>`;
-              statusDiv.classList.add('active');
-
-              audioPlayer.onloadeddata = () => {
-                audioPlayer.play().catch(e => console.log('Autoplay prevented:', e));
-              };
-
-              audioPlayer.onended = () => {
-                updateStatus("Ready for your next message. Tap to continue the conversation.");
-                updateButtonState('');
-                isProcessing = false;
-                
-                // Automatically start recording for the next message
-                setTimeout(() => {
-                  if (!isRecording && !isProcessing) {
-                    startRecording();
-                  }
-                }, 1000); // Small delay to allow user to process the response
-              };
-
-            } else {
-              throw new Error(data.error || data.bot_text || "Unknown error");
+        mediaRecorder.ondataavailable = async (e) => {
+          if (e.data && e.data.size > 0 && ws && ws.readyState === WebSocket.OPEN) {
+            try {
+              const buf = await e.data.arrayBuffer();
+              ws.send(buf);
+            } catch (err) {
+              console.error("Send chunk failed:", err);
             }
-          } catch (err) {
-            console.error('Error:', err);
-            updateStatus("Sorry, I'm having trouble connecting right now. Please try again.");
-            updateButtonState('');
-            isProcessing = false;
-            
-            // Auto-restart recording after error too
-            setTimeout(() => {
-              if (!isRecording && !isProcessing) {
-                startRecording();
-              }
-            }, 2000); // Longer delay after error
           }
-
-          // Stop all audio tracks
-          stream.getTracks().forEach(track => track.stop());
         };
 
-        mediaRecorder.start();
-        isRecording = true;
+        mediaRecorder.onstop = () => {
+          setButton(false);
+          setStatus("Stopped. Audio file was saved on the server. Start again when ready.", true);
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            // Optional control message before closing
+            ws.send("close");
+            ws.close();
+          }
+          if (stream) {
+            stream.getTracks().forEach(t => t.stop());
+          }
+          stream = null;
+          mediaRecorder = null;
+          ws = null;
+        };
+
+        // 4) Start recording and emit chunks every 250ms
+        mediaRecorder.start(250);
 
       } catch (err) {
-        console.error('Error accessing microphone:', err);
-        updateStatus("Unable to access microphone. Please check permissions and try again.");
-        updateButtonState('');
-        isRecording = false;
+        console.error(err);
+        setStatus("Failed to access mic or open WebSocket. Check permissions and try again.", false);
+        setButton(false);
       }
     }
 
-    function stopRecording() {
-      if (mediaRecorder && mediaRecorder.state === 'recording') {
+    function stopStreaming() {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
         mediaRecorder.stop();
-        isRecording = false;
+      } else {
+        // Clean up just in case
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.close();
+        }
+        if (stream) {
+          stream.getTracks().forEach(t => t.stop());
+        }
+        ws = null; stream = null; mediaRecorder = null;
+        setButton(false);
+        setStatus("Stopped.", false);
       }
     }
 
-    // Optional: Add keyboard shortcut (spacebar to toggle recording)
+    recordBtn.addEventListener('click', () => {
+      if (!isRecording) startStreaming();
+      else stopStreaming();
+    });
+
+    // Optional: space key toggles
     document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && !isProcessing) {
+      if (e.code === 'Space') {
         e.preventDefault();
-        recordButton.click();
+        recordBtn.click();
       }
     });
   </script>
